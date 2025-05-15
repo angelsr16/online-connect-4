@@ -88,18 +88,6 @@ cp src/environments/environment.ts.example src/environments/environment.ts
 
 ---
 
-### 📁 Project Structure
-
-```bash
-connect4-online/
-├── backend/          # FastAPI backend
-├── frontend/         # Angular frontend
-├── README.md
-├── .gitignore
-```
-
----
-
 ### ✅ TODO (WIP)
 
 - [x] Responsive dashboard and sidebar
