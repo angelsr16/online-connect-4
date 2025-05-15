@@ -1,0 +1,100 @@
+<div class="flex flex-col">
+    <!-- TOP BAR -->
+    <div class="w-full border-b-2 border-gray-200 py-3 sm:hidden block">
+        <div class="flex w-full h-full px-4 items-center justify-between">
+            <i (click)="isSidebarExpanded = !isSidebarExpanded"
+                class="pi pi-bars cursor-pointer border border-gray-300 shadow rounded-lg p-2 text-neutral-500"
+                style="font-size: 18px"></i>
+
+            <div class="flex items-center">
+                <p-avatar label="A" styleClass="mr-2" shape="circle" />
+                <span class="font-semibold cursor-pointer">
+                    angelsr16
+                    <i class="pi pi-angle-down" (click)="op.toggle($event)"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex w-full h-screen">
+        <!-- SIDEBAR -->
+        <div class="h-screen bg-gray-900 flex flex-col text-white overflow-hidden transition-all duration-500 ease-in-out"
+            [ngStyle]="{ width: getSidebarWidth(), padding: getSidebarPadding()}" [ngClass]="{'fixed z-50': isMobile}">
+            <div class="w-full flex gap-2 items-center justify-center text-3xl">
+
+                @if (isSidebarExpanded) {
+                <p class="font-bold whitespace-nowrap transition-opacity duration-300 xl:text-2xl text-lg" [ngClass]="{
+              'opacity-0 invisible': !isSidebarExpanded,
+              'opacity-100 visible': isSidebarExpanded
+            }">
+                    Connect 4
+                </p>
+                }
+            </div>
+
+            @if (isSidebarExpanded) {
+            <hr class="my-5 text-gray-500">
+            }
+
+            @if(!isMobile){
+            <br><br>
+            }
+
+            <div class="flex flex-col gap-5 w-full">
+                @for (menuItem of menuItems; track $index) {
+                <div [routerLink]="menuItem.path" routerLinkActive="bg-gray-700"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    class="w-full flex items-center gap-5 font-bold hover:bg-gray-700 transition-all duration-450 px-3 py-2 text-2xl rounded-xl cursor-pointer">
+                    <!-- <img [src]="menuItem.icon" class="size-8"/> -->
+                    @if(isSidebarExpanded){
+                    <span class="font-bold whitespace-nowrap transition-opacity duration-300 xl:text-2xl text-lg"
+                        [ngClass]="{
+              'opacity-0 invisible': !isSidebarExpanded,
+              'opacity-100 visible': isSidebarExpanded
+            }">
+                        {{ menuItem.label }}
+                    </span>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+        <div class="w-full flex flex-col">
+            <!-- TOP BAR -->
+            <div class="w-full border-b-2 border-gray-200 py-3 sm:block hidden">
+                <div class="flex w-full h-full px-10 items-center justify-between">
+                    <i (click)="isSidebarExpanded = !isSidebarExpanded"
+                        [ngClass]="isSidebarExpanded ? 'pi-bars' : 'pi-bars'"
+                        class="pi cursor-pointer border border-gray-300 shadow rounded-lg p-2 text-neutral-500"
+                        style="font-size: 30px"></i>
+
+                    <div class="flex items-center">
+                        <p-avatar label="A" styleClass="mr-2" shape="circle" />
+                        <span class="font-semibold cursor-pointer" (click)="op.toggle($event)">
+                            &#64;angelsr16
+                            <i class="pi pi-angle-down"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="w-full overflow-scroll h-full">
+                <router-outlet></router-outlet>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-popover #op>
+    <div class="w-full flex flex-col gap-2">
+        <div class="w-full flex items-center gap-1 cursor-pointer px-3 hover:bg-gray-200 rounded-lg py-2"
+            (click)="onSignOut()">
+            <span>
+                Sign Out
+            </span>
+            <i class="pi pi-sign-out"></i>
+        </div>
+    </div>
+</p-popover>
