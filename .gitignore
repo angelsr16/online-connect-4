@@ -1,0 +1,46 @@
+# Global
+.env
+.DS_Store
+*.pyc
+__pycache__/
+
+# === Backend ===
+/backend/__pycache__/
+/backend/*.pyc
+/backend/env/
+/backend/.env
+/backend/.venv/
+/backend/venv/
+/backend/.mypy_cache/
+/backend/.pytest_cache/
+/backend/.ruff_cache/
+/backend/.coverage
+/backend/instance/
+/backend/*.sqlite3
+/backend/*.log
+
+# === Frontend ===
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/cache/
+/frontend/.angular/config.json
+/frontend/package-lock.json
+/frontend/npm-debug.log*
+
+# Ignore Angular environment files
+/frontend/src/environments/environment.ts
+/frontend/src/environments/environment.prod.ts
+/frontend/src/environments/*.local.ts
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS
+Thumbs.db
+ehthumbs.db
+desktop.ini
