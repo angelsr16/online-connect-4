@@ -1,19 +1,27 @@
-from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+from bson import ObjectId
+from pydantic import BaseModel, Field
 from datetime import datetime
 
-from db.models.pyobjectid import ObjectId
+from db.models.pyobjectid import PyObjectId
 
 
-class UserModel(BaseModel):
-    id: Optional[ObjectId] = Field(alias="_id")
+class UserBase(BaseModel):
     username: str
-    hashed_password: str
     elo_rating: int = 1200
     games_played: int = 0
     wins: int = 0
     losses: int = 0
     draws: int = 0
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserInDB(UserBase):
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    hashed_password: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
 
