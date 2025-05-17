@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { PopoverModule } from 'primeng/popover';
 import { AvatarModule } from 'primeng/avatar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { BasicUserInfo } from '../../core/models/BasicUserInfo';
 
 @Component({
   selector: 'app-playground',
@@ -25,13 +27,21 @@ export class PlaygroundComponent {
   isMobile: boolean = false;
   sidebarToggle: boolean = false;
 
+  userInfo!: BasicUserInfo | null;
+
   menuItems: any = [
     { label: 'Local', icon: 'assets/icons/local_icon.png', path: 'local' },
     { label: 'Online', icon: 'assets/icons/online_icon.png', path: 'online' },
     { label: 'AI', icon: 'assets/icons/ai_icon.png', path: 'ai' },
   ];
 
-  onSignOut() {}
+  constructor(private authService: AuthService) {
+    this.userInfo = this.authService.getUserInfoFromToken();
+  }
+
+  onSignOut() {
+    this.authService.logOut();
+  }
 
   @HostListener('window:resize', ['$event'])
   onResize(event: Event) {

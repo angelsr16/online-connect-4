@@ -53,7 +53,10 @@ async def login(
             detail="Incorrect username or password",
         )
 
-    access_token = create_access_token(data={"sub": user["username"]})
+    print(user["id"])
+    access_token = create_access_token(
+        data={"sub": user["username"], "uid": user["id"]}
+    )
     return {
         "access_token": access_token,
         "token_type": "bearer",

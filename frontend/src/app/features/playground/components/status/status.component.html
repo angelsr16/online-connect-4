@@ -1,0 +1,7 @@
+<span class="rounded-full px-3 py-1 bg-yellow-200 font-semibold text-yellow-600" [ngClass]="
+    {
+        'text-yellow-600 bg-yellow-200' : status === 'waiting', 
+        'text-blue-600 bg-blue-200':  status === 'active'
+    }">
+    {{ status }}
+</span>

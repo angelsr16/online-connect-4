@@ -26,28 +26,28 @@ async def register_game(
 @router.get("/")
 async def get_games(
     db: AsyncIOMotorDatabase = Depends(get_database),
-    user: str = Depends(verify_token),
+    user: dict = Depends(verify_token),
 ):
     games = await game_service.get_games_by_user(db, user["id"])
 
     return games
 
 
-@router.post("/{game_id}")
+@router.post("/{game_id}/move")
 async def make_movement(
     game_id: str,
     column_index: int,
     db: AsyncIOMotorDatabase = Depends(get_database),
-    user: str = Depends(verify_token),
+    user: dict = Depends(verify_token),
 ):
     return await game_service.make_movement(db, user["id"], game_id, column_index)
 
 
-@router.post("/{join_code}")
+@router.post("/join/{join_code}")
 async def join_game(
     join_code: str,
     db: AsyncIOMotorDatabase = Depends(get_database),
-    user: str = Depends(verify_token),
+    user: dict = Depends(verify_token),
 ):
     updated_game = await game_service.join_game(db, user, join_code)
     return updated_game

@@ -22,5 +22,8 @@ class GameInDB(GameBase):
     model_config = {
         "populate_by_name": True,
         "arbitrary_types_allowed": True,
-        "json_encoders": {ObjectId: str},
+        "json_encoders": {
+            ObjectId: str,
+            datetime: lambda v: v.replace(microsecond=0).isoformat() + "Z",
+        },
     }

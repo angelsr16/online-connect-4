@@ -1,0 +1,11 @@
+<div class="grid grid-cols-7 gap-1 p-2 bg-blue-700 rounded-lg">
+    @for (row of gameGrid; track $index) {
+    @for (cell of row; track $index) {
+    <div class="md:w-8 md:h-8 w-6 h-6 rounded-full flex items-center justify-center" [ngClass]="{
+    'bg-white': cell === 0,
+    'bg-red-500': cell === 1,
+    'bg-yellow-400': cell === 2
+  }"></div>
+    }
+    }
+</div>

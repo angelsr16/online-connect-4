@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,6 +11,7 @@ export const routes: Routes = [
   },
   {
     path: 'playground',
+    canActivate: [AuthGuard],
     loadComponent: () =>
       import('./features/playground/playground.component').then(
         (c) => c.PlaygroundComponent
@@ -18,24 +20,25 @@ export const routes: Routes = [
       {
         path: 'local',
         loadComponent: () =>
-          import('./features/playground/local/local.component').then(
+          import('./features/playground/pages/local/local.component').then(
             (c) => c.LocalComponent
           ),
       },
       {
         path: 'online',
         loadComponent: () =>
-          import('./features/playground/online/online.component').then(
+          import('./features/playground/pages/online/online.component').then(
             (c) => c.OnlineComponent
           ),
       },
       {
         path: 'ai',
         loadComponent: () =>
-          import('./features/playground/ai/ai.component').then(
+          import('./features/playground/pages/ai/ai.component').then(
             (c) => c.AiComponent
           ),
       },
     ],
   },
+  { path: '**', redirectTo: '/playground', pathMatch: 'full' },
 ];

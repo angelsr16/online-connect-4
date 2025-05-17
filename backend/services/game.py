@@ -3,7 +3,8 @@ import uuid
 from bson import ObjectId
 from fastapi import HTTPException, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from db.crud import game as crud_game
+from db.crud import game as crud_game, user as crud_user
+from db.helpers.game import game_helper
 from db.models.game import GameInDB
 
 
@@ -44,11 +45,20 @@ async def create_game(db: AsyncIOMotorDatabase, player_id: str) -> dict:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="There has been an error while creating a game, try again.",
         )
-    return new_game_data
+
+    populated_game_data = await populate_players(db, new_game_data)
+
+    return game_helper(populated_game_data)
 
 
 async def get_games_by_user(db: AsyncIOMotorDatabase, player_id: str):
-    return await crud_game.get_games_by_user_id(db, player_id)
+    games_list = await crud_game.get_games_by_user_id(db, player_id)
+
+    games = []
+    for game in games_list:
+        games.append(game_helper(await populate_players(db, game)))
+
+    return games
 
 
 async def join_game(db: AsyncIOMotorDatabase, user, join_code: str):
@@ -59,12 +69,17 @@ async def join_game(db: AsyncIOMotorDatabase, user, join_code: str):
             status_code=status.HTTP_404_NOT_FOUND, detail="Game not found"
         )
 
-    if game["player_1"] == user["id"] or game["player_2"] == user["id"]:
+    populated_game = await populate_players(db, game)
+
+    if populated_game["player_1"]["id"] == user["id"] or (
+        populated_game["player_2"] is not None
+        and populated_game["player_2"]["id"] == user["id"]
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You can't join your own game"
         )
 
-    if game["status"] != "waiting" or game["player_2"] is not None:
+    if populated_game["status"] != "waiting" or populated_game["player_2"] is not None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You can't join this game"
         )
@@ -84,17 +99,20 @@ async def join_game(db: AsyncIOMotorDatabase, user, join_code: str):
     random_number = random.random()
 
     update_fields["current_turn"] = (
-        objectid_user_id if random_number > 0.5 else game["player_1"]
+        objectid_user_id if random_number > 0.5 else populated_game["player_1"]["id"]
     )
 
-    updated_game = await crud_game.update_game(db, game["id"], update_fields)
+    updated_game = await crud_game.update_game(
+        db, str(populated_game["_id"]), update_fields
+    )
 
     if updated_game == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Couldn't join the game"
         )
 
-    return updated_game
+    populated_game = await populate_players(db, updated_game)
+    return game_helper(populated_game)
 
 
 async def make_movement(
@@ -113,30 +131,36 @@ async def make_movement(
             detail="Game not found in your games list",
         )
 
-    if game_data["status"] != "active":
+    populated_game_data = await populate_players(db, game_data)
+
+    if populated_game_data["status"] != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="The game isn't active"
         )
 
-    if game_data["player_1"] != player_id and game_data.get("player_2") != player_id:
+    current_turn = str(populated_game_data["current_turn"])
+    player_1 = populated_game_data["player_1"]["id"]
+    player_2 = (
+        populated_game_data["player_2"]["id"]
+        if populated_game_data["player_2"] is not None
+        else None
+    )
+
+    if player_1 != player_id and player_2 != player_id:
         raise HTTPException(status_code=403, detail="You're not part of this game")
 
-    if game_data["current_turn"] != player_id:
+    if current_turn != player_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not your turn"
         )
 
-    current_turn = game_data["current_turn"]
-    player_1 = game_data["player_1"]
-    player_2 = game_data["player_2"]
     column_movement = 0
     row_movement = 0
-
     disk_was_placed = False
-    for row in reversed(range(len(game_data["game_state"]))):
-        cell = game_data["game_state"][row][column_index]
+    for row in reversed(range(len(populated_game_data["game_state"]))):
+        cell = populated_game_data["game_state"][row][column_index]
         if cell == 0:
-            game_data["game_state"][row][column_index] = (
+            populated_game_data["game_state"][row][column_index] = (
                 1 if current_turn == player_1 else 2
             )
             column_movement = column_index
@@ -147,8 +171,8 @@ async def make_movement(
 
     if disk_was_placed:
         update_fields = {
-            "game_state": game_data["game_state"],
-            "current_turn": current_turn,
+            "game_state": populated_game_data["game_state"],
+            "current_turn": ObjectId(current_turn),
         }
 
         push_fields = {
@@ -165,9 +189,38 @@ async def make_movement(
 
         if updated_game == None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Couldn't join the game"
+                status_code=status.HTTP_404_NOT_FOUND, detail="There has been an error"
             )
 
-        return updated_game
+        populated_updated_game = await populate_players(db, updated_game)
+
+        return game_helper(populated_updated_game)
 
     return None
+
+
+async def populate_players(db: AsyncIOMotorDatabase, game):
+    users_collection = db["users"]
+
+    player_1 = await users_collection.find_one({"_id": game["player_1"]})
+    player_2 = await users_collection.find_one({"_id": game["player_2"]})
+
+    game["player_1"] = (
+        {
+            "id": str(player_1["_id"]),
+            "username": player_1["username"],
+        }
+        if player_1
+        else None
+    )
+
+    game["player_2"] = (
+        {
+            "id": str(player_2["_id"]),
+            "username": player_2["username"],
+        }
+        if player_2
+        else None
+    )
+
+    return game

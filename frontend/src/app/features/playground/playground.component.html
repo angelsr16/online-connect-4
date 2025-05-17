@@ -6,13 +6,16 @@
                 class="pi pi-bars cursor-pointer border border-gray-300 shadow rounded-lg p-2 text-neutral-500"
                 style="font-size: 18px"></i>
 
+            @if (userInfo !== null && userInfo.username !== "") {
             <div class="flex items-center">
-                <p-avatar label="A" styleClass="mr-2" shape="circle" />
+                <p-avatar [label]="userInfo.username.charAt(0).toUpperCase()" styleClass="mr-2" shape="circle" />
                 <span class="font-semibold cursor-pointer">
-                    angelsr16
+                    &#64;{{ userInfo.username }}
                     <i class="pi pi-angle-down" (click)="op.toggle($event)"></i>
                 </span>
             </div>
+
+            }
         </div>
     </div>
 
@@ -69,18 +72,22 @@
                         class="pi cursor-pointer border border-gray-300 shadow rounded-lg p-2 text-neutral-500"
                         style="font-size: 30px"></i>
 
+                    @if (userInfo !== null && userInfo.username !== "") {
                     <div class="flex items-center">
-                        <p-avatar label="A" styleClass="mr-2" shape="circle" />
-                        <span class="font-semibold cursor-pointer" (click)="op.toggle($event)">
-                            &#64;angelsr16
-                            <i class="pi pi-angle-down"></i>
+                        <p-avatar [label]="userInfo.username.charAt(0).toUpperCase()" styleClass="mr-2"
+                            shape="circle" />
+                        <span class="font-semibold cursor-pointer">
+                            &#64;{{ userInfo.username }}
+                            <i class="pi pi-angle-down" (click)="op.toggle($event)"></i>
                         </span>
                     </div>
+
+                    }
                 </div>
             </div>
 
             <!-- MAIN CONTENT -->
-            <div class="w-full overflow-scroll h-full">
+            <div class="w-full overflow-scroll h-full p-5">
                 <router-outlet></router-outlet>
             </div>
         </div>

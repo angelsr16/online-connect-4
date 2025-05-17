@@ -4,8 +4,8 @@ from typing import List
 def game_helper(game: dict) -> dict:
     return {
         "id": str(game["_id"]),
-        "player_1": str(game["player_1"]),
-        "player_2": str(game["player_2"]) if game["player_2"] is not None else None,
+        "player_1": game["player_1"],
+        "player_2": game["player_2"] if game["player_2"] is not None else None,
         "game_state": game["game_state"],
         "status": game["status"],
         "moves": game["moves"],

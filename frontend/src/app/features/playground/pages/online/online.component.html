@@ -1,0 +1,105 @@
+@if (!currentGame) {
+<div class="w-full flex gap-2">
+    <button pButton label="New Game" icon="pi pi-plus" iconPos="right" severity="info"></button>
+</div>
+
+<div class="flex flex-wrap md:px-5 px-1 py-10 gap-5 sm:justify-start justify-center">
+    @for (game of gamesList; track $index) {
+    <div (click)="currentGame = game"
+        class="border flex flex-col justify-between rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 bg-white shadow">
+        <app-game-preview [gameGrid]="game.game_state" class="w-full h-full"></app-game-preview>
+
+        <div class="flex flex-col p-2 ">
+            <div class="flex justify-center font-semibold gap-2">
+                <span class="truncate max-w-[12ch] block"
+                    [ngClass]="{'text-blue-600 font-black': game.player_1.id === userInfo?.uid}">&#64;{{game.player_1.username}}</span>
+                <strong>VS</strong>
+                @if (game.player_2) {
+                <span class="truncate max-w-[12ch] block">&#64;{{ game.player_2.username }}</span>
+                }@else {
+                <span class="font-thin">
+                    Pending...
+                </span>
+                }
+            </div>
+
+            <div class="flex justify-center my-3">
+                <span class="text-xs">
+                    @if (game.status === 'active') {
+                    @if (game.current_turn === userInfo?.uid) {
+                    YOUR TURN
+                    }@else {
+                    WAITING FOR OPPONENT
+                    }
+                    }@else {WAITING}
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="font-thin italic text-sm">{{ game.created_at | date : 'dd/MM/yyyy HH:mm a' : 'UTC'
+                    }}</span>
+
+                <app-status [status]="game.status"></app-status>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+}@else {
+<div class="w-full flex">
+    <span (click)="currentGame = undefined" class="font-bold cursor-pointer">
+        <i class="pi pi-angle-left"></i>
+        BACK
+    </span>
+</div>
+<div id="board-container" class="w-full flex flex-col items-center h-[calc(100vh_-_200px)]">
+    <div class="flex gap-5 justify-center items-center text-xl my-5">
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex items-center gap-2">
+                <div class="size-8 rounded-full bg-red-500"></div>
+                <div class="px-3 py-1 bg-blue-700 rounded-full text-white font-black cursor-pointer gap-2">
+                    <span>
+                        &#64;{{ currentGame.player_1.username }}
+                    </span>
+                </div>
+            </div>
+            <span class="font-medium text-lg">ELO: <strong>1200</strong></span>
+        </div>
+        <span class="font-bold">VS</span>
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex items-center gap-2">
+                <div class="px-3 py-1 bg-gray-500 rounded-full text-white font-bold cursor-pointer">
+                    @if (currentGame.player_2) {
+                    &#64;{{ currentGame.player_2.username }}
+                    }@else {
+                    Waiting...
+                    }
+                </div>
+                <div class="size-8 rounded-full bg-yellow-500"></div>
+            </div>
+            <span class="font-medium text-lg">ELO: 1240</span>
+        </div>
+    </div>
+
+    <!-- <div class="w-full h-full flex justify-between items-center gap-10">
+        <div class="flex-1 flex flex-col items-center justify-center">
+            <app-game-board #gameBoard [gameGrid]="currentGame.game_state"
+                (onGameClick)="placeDisc($event)"></app-game-board>
+
+        </div>
+
+        <div class="w-1/4 border p-10 rounded-xl">
+            Leaderboard
+        </div>
+    </div> -->
+
+    <div class="w-full h-screen flex justify-center items-center gap-10 p-4">
+        <app-game-board #gameBoard [gameGrid]="currentGame.game_state" (onGameClick)="placeDisc($event)">
+        </app-game-board>
+
+        <!-- <div class="w-1/4 border p-10 rounded-xl bg-white shadow-md">
+            Leaderboard
+        </div> -->
+    </div>
+</div>
+}

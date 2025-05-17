@@ -1,0 +1,22 @@
+.blurred-background {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px); /* Apply blur to the background */
+  border-radius: 10px; /* Optional: Round corners */
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+:host ::ng-deep .p-inputtext {
+  background-color: transparent;
+  color: white;
+}
+
+:host ::ng-deep .p-password-input {
+  background-color: transparent;
+  border-color: white;
+  color: white;
+}
