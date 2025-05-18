@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import Konva from 'konva';
 import { Grid } from '../../../core/models/Grid';
+import { Game } from '../../../core/models/db/Game';
+import { Circle } from 'konva/lib/shapes/Circle';
 
 @Component({
   selector: 'app-game-board',
@@ -9,7 +11,8 @@ import { Grid } from '../../../core/models/Grid';
   styleUrl: './game-board.component.scss',
 })
 export class GameBoardComponent {
-  @Input() gameGrid!: Grid;
+  @Input() gameData!: Game;
+  @Input() player_id!: string;
   @Output() onGameClick: EventEmitter<number> = new EventEmitter();
 
   private stage!: Konva.Stage;
@@ -17,6 +20,8 @@ export class GameBoardComponent {
   private cellSize: number = 0;
   private rows: number = 6;
   private cols: number = 7;
+
+  hoverCircle!: Circle;
 
   constructor() {}
 
@@ -28,71 +33,16 @@ export class GameBoardComponent {
     });
   }
 
-  // private initKonva() {
-  //   const boardContainerRect = document
-  //     .getElementById('board-container')
-  //     ?.getBoundingClientRect();
-
-  //   if (!boardContainerRect) return;
-
-  //   const fullWidth: number = boardContainerRect.width;
-  //   const fullHeight: number = boardContainerRect.height;
-
-  //   this.cellSize = (fullHeight * 0.75) / 6;
-
-  //   const width = this.cellSize * 7;
-  //   const height = this.cellSize * 6;
-
-  //   this.stage = new Konva.Stage({
-  //     container: 'container',
-  //     width,
-  //     height,
-  //   });
-
-  //   this.stage.content.style.border = '1px solid black';
-
-  //   this.layer = new Konva.Layer();
-  //   this.stage.add(this.layer);
-
-  //   const circle = new Konva.Circle({
-  //     x: 0,
-  //     y: 0,
-  //     radius: this.cellSize / 2.5,
-  //     fill: 'red',
-  //   });
-
-  //   this.layer.add(circle);
-  //   this.layer.draw();
-
-  //   this.stage.on('mousemove', () => {
-  //     const pos = this.stage.getPointerPosition();
-  //     if (!pos) return;
-
-  //     circle.position({ x: pos.x, y: this.cellSize / 2 });
-  //     this.layer.batchDraw();
-  //   });
-
-  //   this.stage.on('click', () => {
-  //     const mousePos = this.stage.getPointerPosition();
-
-  //     if (!mousePos) return;
-  //     const xPos = Math.floor((mousePos.x / width) * 7);
-  //     this.onGameClick.emit(xPos);
-  //   });
-
-  //   this.drawGrid();
-  // }
-
   private initKonva() {
     const container = document.getElementById('board-container');
-    if (!container) return;
+    if (!container || !this.gameData) return;
 
     const rect = container.getBoundingClientRect();
     const containerWidth = rect.width;
     const containerHeight = rect.height;
 
-    const cellWidth = (containerWidth / this.cols) * 0.85;
-    const cellHeight = (containerHeight / this.rows) * 0.85;
+    const cellWidth = (containerWidth / this.cols) * 0.75;
+    const cellHeight = (containerHeight / this.rows) * 0.75;
 
     this.cellSize = Math.floor(Math.min(cellWidth, cellHeight));
     const width = this.cellSize * this.cols;
@@ -107,21 +57,17 @@ export class GameBoardComponent {
     this.layer = new Konva.Layer();
     this.stage.add(this.layer);
 
-    const hoverCircle = new Konva.Circle({
+    const grid = new Konva.Rect({
       x: 0,
       y: 0,
-      radius: this.cellSize / 2.5,
-      fill: 'rgba(255,255,255,0.5)',
+      width: this.cellSize * this.cols,
+      height: this.cellSize * this.rows,
+      fill: 'blue',
+      stroke: '#000000',
+      strokeWidth: 2,
+      cornerRadius: 25,
     });
-
-    this.layer.add(hoverCircle);
-
-    this.stage.on('mousemove', () => {
-      const pos = this.stage.getPointerPosition();
-      if (!pos) return;
-      hoverCircle.position({ x: pos.x, y: this.cellSize / 2 });
-      this.layer.batchDraw();
-    });
+    this.layer.add(grid);
 
     this.stage.on('click', () => {
       const pos = this.stage.getPointerPosition();
@@ -133,27 +79,25 @@ export class GameBoardComponent {
     this.drawGrid();
   }
 
-  updateGrid(gameGrid: Grid) {
-    this.gameGrid = gameGrid;
+  updateGrid(gameData: Game) {
+    this.gameData = gameData;
     this.drawGrid();
   }
 
   private drawGrid() {
-    const grid = new Konva.Rect({
-      x: 0,
-      y: 0,
-      width: this.cellSize * this.cols,
-      height: this.cellSize * this.rows,
-      fill: 'blue',
-      stroke: '#000000',
-      strokeWidth: 2,
-    });
-    this.layer.add(grid);
+    if (this.hoverCircle) {
+      this.hoverCircle.remove();
+    }
 
-    this.gameGrid.forEach((row, rowIndex) => {
-      row.forEach((col, colIndex) => {
+    for (
+      let rowIndex = 0;
+      rowIndex < this.gameData.game_state.length;
+      rowIndex++
+    ) {
+      for (let colIndex = 0; colIndex < 7; colIndex++) {
         var color = '#fff';
-        switch (col) {
+        var cellValue = this.gameData.game_state[rowIndex][colIndex];
+        switch (cellValue) {
           case 1:
             color = 'red';
             break;
@@ -163,9 +107,37 @@ export class GameBoardComponent {
         }
 
         this.drawCell(rowIndex, colIndex, color);
-      });
-    });
+      }
+    }
 
+    if (!this.hoverCircle) {
+      this.hoverCircle = new Konva.Circle({
+        x: 0 * this.cellSize + this.cellSize / 2,
+        y: 5 * this.cellSize + this.cellSize / 2,
+        radius: this.cellSize / 2.5,
+        fill:
+          this.player_id === this.gameData.player_1.id ? '#ff6767' : '#f9ff9d',
+      });
+
+      this.stage.on('mousemove', () => {
+        const pos = this.stage.getPointerPosition();
+        if (!pos) return;
+        const column = Math.floor(
+          (pos.x / (this.cellSize * this.cols)) * this.cols
+        );
+
+        var rowPosCirclePreview = this.getCirclePreview(column);
+
+        this.hoverCircle.position({
+          x: column * this.cellSize + this.cellSize / 2,
+          y: rowPosCirclePreview * this.cellSize + this.cellSize / 2,
+        });
+
+        this.layer.batchDraw();
+      });
+    }
+
+    this.layer.add(this.hoverCircle);
     this.layer.draw();
   }
 
@@ -180,6 +152,16 @@ export class GameBoardComponent {
     });
 
     this.layer.add(circle);
+  }
+
+  getCirclePreview(columnIndex: number): number {
+    for (let row = this.gameData.game_state.length - 1; row >= 0; row--) {
+      const cell = this.gameData.game_state[row][columnIndex];
+      if (cell === 0) {
+        return row;
+      }
+    }
+    return -1;
   }
 
   onLeftClick() {

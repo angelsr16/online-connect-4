@@ -27,3 +27,7 @@ class GameInDB(GameBase):
             datetime: lambda v: v.replace(microsecond=0).isoformat() + "Z",
         },
     }
+
+
+class MoveRequest(BaseModel):
+    column_index: int

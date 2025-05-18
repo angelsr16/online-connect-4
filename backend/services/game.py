@@ -209,6 +209,7 @@ async def populate_players(db: AsyncIOMotorDatabase, game):
         {
             "id": str(player_1["_id"]),
             "username": player_1["username"],
+            "elo_rating": player_1["elo_rating"],
         }
         if player_1
         else None
@@ -218,6 +219,7 @@ async def populate_players(db: AsyncIOMotorDatabase, game):
         {
             "id": str(player_2["_id"]),
             "username": player_2["username"],
+            "elo_rating": player_2["elo_rating"],
         }
         if player_2
         else None

@@ -1,11 +1,14 @@
-@if (!currentGame) {
 <div class="w-full flex gap-2">
-    <button pButton label="New Game" icon="pi pi-plus" iconPos="right" severity="info"></button>
+    <button (click)="onNewGame()" pButton label="New Game" [loading]="this.isLoading" icon="pi pi-plus" iconPos="right"
+        severity="info"></button>
+
+    <button (click)="displayJoinGameModal = true" pButton label="Join Game" [loading]="this.isLoading" icon="pi pi-link"
+        iconPos="right" severity="warn"></button>
 </div>
 
 <div class="flex flex-wrap md:px-5 px-1 py-10 gap-5 sm:justify-start justify-center">
     @for (game of gamesList; track $index) {
-    <div (click)="currentGame = game"
+    <div (click)="onConnectGame(game)"
         class="border flex flex-col justify-between rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 bg-white shadow">
         <app-game-preview [gameGrid]="game.game_state" class="w-full h-full"></app-game-preview>
 
@@ -23,15 +26,20 @@
                 }
             </div>
 
-            <div class="flex justify-center my-3">
-                <span class="text-xs">
+            <div class="flex justify-center my-5">
+                <span class="">
                     @if (game.status === 'active') {
                     @if (game.current_turn === userInfo?.uid) {
                     YOUR TURN
                     }@else {
                     WAITING FOR OPPONENT
                     }
-                    }@else {WAITING}
+                    }@else {
+                    Code:
+                    <strong>
+                        {{ game.join_code }}
+                    </strong>
+                    }
                 </span>
             </div>
 
@@ -45,61 +53,17 @@
     </div>
     }
 </div>
-}@else {
-<div class="w-full flex">
-    <span (click)="currentGame = undefined" class="font-bold cursor-pointer">
-        <i class="pi pi-angle-left"></i>
-        BACK
-    </span>
-</div>
-<div id="board-container" class="w-full flex flex-col items-center h-[calc(100vh_-_200px)]">
-    <div class="flex gap-5 justify-center items-center text-xl my-5">
-        <div class="flex items-center gap-1 flex-col">
-            <div class="flex items-center gap-2">
-                <div class="size-8 rounded-full bg-red-500"></div>
-                <div class="px-3 py-1 bg-blue-700 rounded-full text-white font-black cursor-pointer gap-2">
-                    <span>
-                        &#64;{{ currentGame.player_1.username }}
-                    </span>
-                </div>
-            </div>
-            <span class="font-medium text-lg">ELO: <strong>1200</strong></span>
-        </div>
-        <span class="font-bold">VS</span>
-        <div class="flex items-center gap-1 flex-col">
-            <div class="flex items-center gap-2">
-                <div class="px-3 py-1 bg-gray-500 rounded-full text-white font-bold cursor-pointer">
-                    @if (currentGame.player_2) {
-                    &#64;{{ currentGame.player_2.username }}
-                    }@else {
-                    Waiting...
-                    }
-                </div>
-                <div class="size-8 rounded-full bg-yellow-500"></div>
-            </div>
-            <span class="font-medium text-lg">ELO: 1240</span>
-        </div>
+
+<p-dialog header="Join Game" [modal]="true" [(visible)]="displayJoinGameModal" [style]="{ width: '25rem' }">
+
+    <div class="flex flex-col gap-2 mb-10">
+        <label for="join_code" class="font-semibold w-24">Code</label>
+        <input pInputText id="join_code" class="flex-auto" autocomplete="off" [(ngModel)]="joinCode" />
     </div>
 
-    <!-- <div class="w-full h-full flex justify-between items-center gap-10">
-        <div class="flex-1 flex flex-col items-center justify-center">
-            <app-game-board #gameBoard [gameGrid]="currentGame.game_state"
-                (onGameClick)="placeDisc($event)"></app-game-board>
-
-        </div>
-
-        <div class="w-1/4 border p-10 rounded-xl">
-            Leaderboard
-        </div>
-    </div> -->
-
-    <div class="w-full h-screen flex justify-center items-center gap-10 p-4">
-        <app-game-board #gameBoard [gameGrid]="currentGame.game_state" (onGameClick)="placeDisc($event)">
-        </app-game-board>
-
-        <!-- <div class="w-1/4 border p-10 rounded-xl bg-white shadow-md">
-            Leaderboard
-        </div> -->
+    <div class="flex">
+        <button (click)="onJoinGame()" class="w-full" pButton label="JOIN" severity="contrast"></button>
     </div>
-</div>
-}
+</p-dialog>
+
+<p-toast></p-toast>

@@ -13,6 +13,7 @@ export interface Game {
 export interface Player {
   id: string;
   username: string;
+  elo_rating: number;
 }
 
 export interface Move {

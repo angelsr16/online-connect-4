@@ -26,10 +26,22 @@ export const routes: Routes = [
       },
       {
         path: 'online',
-        loadComponent: () =>
-          import('./features/playground/pages/online/online.component').then(
-            (c) => c.OnlineComponent
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import(
+                './features/playground/pages/online/online.component'
+              ).then((c) => c.OnlineComponent),
+          },
+          {
+            path: ':gameId',
+            loadComponent: () =>
+              import(
+                './features/playground/pages/online/game-session.component'
+              ).then((c) => c.GameSessionComponent),
+          },
+        ],
       },
       {
         path: 'ai',

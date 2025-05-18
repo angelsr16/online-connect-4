@@ -5,22 +5,32 @@ import { Grid } from '../../../../core/models/Grid';
 import { GamesService } from '../../../../core/services/games.service';
 import { Game } from '../../../../core/models/db/Game';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import { GamePreviewComponent } from '../../components/game-preview/game-preview.component';
 import { StatusComponent } from '../../components/status/status.component';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BasicUserInfo } from '../../../../core/models/BasicUserInfo';
+import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-online',
   imports: [
-    GameBoardComponent,
     ButtonModule,
     GamePreviewComponent,
     StatusComponent,
     DatePipe,
     CommonModule,
+    DialogModule,
+    FormsModule,
+    InputTextModule,
+    ToastModule,
   ],
+  providers: [MessageService],
   templateUrl: './online.component.html',
   styleUrl: './online.component.scss',
 })
@@ -30,34 +40,53 @@ export class OnlineComponent {
   gamesList: Game[] = [];
   userInfo: BasicUserInfo | null;
 
-  currentGame: Game | undefined;
+  isLoading: boolean = false;
+
+  displayJoinGameModal: boolean = false;
+  joinCode: string = '';
 
   constructor(
     private gamesService: GamesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
   ) {
     this.gamesService.getGames().subscribe((games) => {
       this.gamesList = games as Game[];
-
-      console.log(this.gamesList);
     });
     this.userInfo = this.authService.getUserInfoFromToken();
   }
 
-  placeDisc(xPos: number) {
-    // var diskWasPlaced: boolean = false;
-    // for (let row = this.gameGrid.length - 1; row >= 0; row--) {
-    //   const cell = this.gameGrid[row][xPos];
-    //   if (cell === 0) {
-    //     this.gameGrid[row][xPos] = this.currentTurn;
-    //     diskWasPlaced = true;
-    //     this.currentTurn = this.currentTurn === 1 ? 2 : 1;
-    //     break;
-    //   }
-    // }
-    // if (diskWasPlaced) {
-    //   console.log('Disk placed');
-    //   this.gameBoard.updateGrid(this.gameGrid);
-    // }
+  onConnectGame(game: Game) {
+    this.router.navigate([`/playground/online/${game.id}`]);
+  }
+
+  onNewGame() {
+    this.isLoading = true;
+    this.gamesService.createGame().subscribe((game: any) => {
+      if (game) {
+        this.router.navigate([`/playground/online/${game.id}`]);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onJoinGame() {
+    this.isLoading = true;
+
+    this.gamesService.joinGame(this.joinCode).subscribe({
+      next: (game: any) => {
+        this.router.navigate([`/playground/online/${game.id}`]);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.log(err.error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error.detail,
+        });
+      },
+    });
   }
 }

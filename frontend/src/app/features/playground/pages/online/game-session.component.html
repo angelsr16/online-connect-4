@@ -1,0 +1,63 @@
+<span (click)="onCloseSession()" class="inline-flex gap-1 items-center font-bold text-xl cursor-pointer">
+    <i class="pi pi-angle-left" style="font-size: 28px;"></i>
+    <span>BACK</span>
+</span>
+
+@if (gameData && userInfo) {
+<div id="board-container" class="w-full flex flex-col items-center h-[calc(100vh_-_200px)] relative">
+    <div class="flex md:flex-row flex-col md:gap-5 gap-2 justify-center items-center md:text-xl text-sm my-5">
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex items-center gap-2">
+                <div class="size-8 rounded-full bg-red-500"></div>
+                <div [ngClass]="gameData.player_1.id === gameData.current_turn ? 'bg-green-700' : 'bg-gray-500'"
+                    class="px-3 py-1 rounded-full text-white font-black cursor-pointer gap-2">
+                    <span>
+                        &#64;{{ gameData.player_1.username }}
+                    </span>
+                </div>
+            </div>
+            <span class="font-medium md:text-lg text-sm">ELO: <strong>{{ gameData.player_1.elo_rating }}</strong></span>
+        </div>
+        <span class="font-bold">VS</span>
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex md:flex-row flex-row-reverse items-center gap-2">
+                <div [ngClass]="gameData.player_2?.id === gameData.current_turn ? 'bg-green-700' : 'bg-gray-500'"
+                    class="px-3 py-1 rounded-full text-white font-bold cursor-pointer">
+                    @if (gameData.player_2) {
+                    &#64;{{ gameData.player_2.username }}
+                    }@else {
+                    Waiting...
+                    }
+                </div>
+                <div class="size-8 rounded-full bg-yellow-500"></div>
+            </div>
+            @if (gameData.player_2) {
+            <span class="font-medium md:text-lg text-sm">ELO: {{ gameData.player_2.elo_rating }}</span>
+            }
+        </div>
+    </div>
+
+    <div class="w-full h-screen flex justify-center items-center gap-10 p-4 relative">
+        <app-game-board #gameBoard [gameData]="gameData" [player_id]="userInfo.uid" (onGameClick)="placeDisc($event)">
+        </app-game-board>
+
+    </div>
+
+
+
+    @if (gameData.status === "waiting") {
+    <div class="absolute inset-0 bg-gray-400 opacity-40 z-10 pointer-events-none m-2 rounded-xl"></div>
+    <div class="flex flex-col justify-center items-center w-full h-full absolute top-0 z-20">
+        <span class="text-4xl text-black bg-white p-10 rounded-xl border-4 border-gray-700"
+            style="box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;">
+            JOIN CODE: <strong>{{ gameData.join_code }}</strong>
+        </span>
+
+    </div>
+    }
+</div>
+}@else {
+<div class="w-full flex justify-center items-center">
+    Loading...
+</div>
+}
