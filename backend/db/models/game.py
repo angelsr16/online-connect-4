@@ -13,6 +13,7 @@ class GameBase(BaseModel):
     game_state: List[List[int]]
     status: str = "waiting"
     moves: List[dict] = []
+    winner: str = ""
 
 
 class GameInDB(GameBase):

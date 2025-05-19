@@ -1,7 +1,12 @@
 <span class="rounded-full px-3 py-1 bg-yellow-200 font-semibold text-yellow-600" [ngClass]="
     {
         'text-yellow-600 bg-yellow-200' : status === 'waiting', 
-        'text-blue-600 bg-blue-200':  status === 'active'
+        'text-blue-600 bg-blue-200':  status === 'active',
+        'text-red-600 bg-red-200': status === 'game_over'
     }">
+    @if (status === 'game_over') {
+    finished
+    }@else {
     {{ status }}
+    }
 </span>

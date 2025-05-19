@@ -6,6 +6,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BasicUserInfo } from '../../core/models/BasicUserInfo';
+import { LeaderboardComponent } from "./components/leaderboard/leaderboard.component";
 
 @Component({
   selector: 'app-playground',
@@ -17,7 +18,8 @@ import { BasicUserInfo } from '../../core/models/BasicUserInfo';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-  ],
+    LeaderboardComponent
+],
   standalone: true,
   templateUrl: './playground.component.html',
   styleUrl: './playground.component.scss',

@@ -37,6 +37,22 @@
         </div>
     </div>
 
+    @if (gameData.status === 'game_over') {
+    <div class="w-full inline-flex justify-center items-center my-4 gap-5">
+        <span class="text-3xl text-center font-bold">
+            @switch (gameData.winner) {
+            @case ("") {
+            DRAW!
+            }@case (userInfo.uid) {
+            YOU WIN!
+            }@default {
+            YOU LOSE!
+            }
+            }
+        </span>
+    </div>
+    }
+
     <div class="w-full h-screen flex justify-center items-center gap-10 p-4 relative">
         <app-game-board #gameBoard [gameData]="gameData" [player_id]="userInfo.uid" (onGameClick)="placeDisc($event)">
         </app-game-board>
@@ -52,7 +68,6 @@
             style="box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;">
             JOIN CODE: <strong>{{ gameData.join_code }}</strong>
         </span>
-
     </div>
     }
 </div>

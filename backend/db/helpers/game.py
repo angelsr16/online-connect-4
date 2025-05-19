@@ -14,6 +14,7 @@ def game_helper(game: dict) -> dict:
         "current_turn": (
             str(game["current_turn"]) if game["current_turn"] is not None else None
         ),
+        "winner": game["winner"],
     }
 
 

@@ -1,7 +1,7 @@
 import random
 import uuid
 from bson import ObjectId
-from fastapi import HTTPException, status
+from fastapi import HTTPException, WebSocket, WebSocketDisconnect, status
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from db.crud import game as crud_game, user as crud_user
 from db.helpers.game import game_helper
@@ -157,6 +157,7 @@ async def make_movement(
     column_movement = 0
     row_movement = 0
     disk_was_placed = False
+    has_winner = False
     for row in reversed(range(len(populated_game_data["game_state"]))):
         cell = populated_game_data["game_state"][row][column_index]
         if cell == 0:
@@ -166,7 +167,14 @@ async def make_movement(
             column_movement = column_index
             row_movement = row
             disk_was_placed = True
-            current_turn = player_2 if current_turn == player_1 else player_1
+
+            game_status = check_game_status(
+                populated_game_data["game_state"], 1 if current_turn == player_1 else 2
+            )
+
+            if game_status == None:
+                current_turn = player_2 if current_turn == player_1 else player_1
+
             break
 
     if disk_was_placed:
@@ -174,6 +182,11 @@ async def make_movement(
             "game_state": populated_game_data["game_state"],
             "current_turn": ObjectId(current_turn),
         }
+
+        if game_status != None:
+            another_player = player_2 if player_1 == player_id else player_1
+
+            await end_game(db, game_status, update_fields, player_id, another_player)
 
         push_fields = {
             "moves": {
@@ -226,3 +239,57 @@ async def populate_players(db: AsyncIOMotorDatabase, game):
     )
 
     return game
+
+
+def check_game_status(game_grid, player):
+    rows = len(game_grid)
+    cols = len(game_grid[0])
+
+    # Horizontal
+    for row in range(rows):
+        for col in range(cols - 3):
+            if all(game_grid[row][col + i] == player for i in range(4)):
+                return "win"
+
+    # Vertical
+    for row in range(rows - 3):
+        for col in range(cols):
+            if all(game_grid[row + i][col] == player for i in range(4)):
+                return "win"
+
+    # Diagonal (\)
+    for row in range(rows - 3):
+        for col in range(cols - 3):
+            if all(game_grid[row + i][col + i] == player for i in range(4)):
+                return "win"
+
+    # Diagonal (/)
+    for row in range(rows - 3):
+        for col in range(3, cols):
+            if all(game_grid[row + i][col - i] == player for i in range(4)):
+                return "win"
+
+    # Check for draw (no empty spaces, i.e., no 0s)
+    if all(cell != 0 for row in game_grid for cell in row):
+        return "draw"
+
+    return None
+
+
+async def end_game(
+    db: AsyncIOMotorDatabase, game_status, update_fields, current_player, another_player
+):
+    if game_status == "draw" or game_status == "win":
+        update_fields["status"] = "game_over"
+
+    if game_status == "win":
+        update_fields["winner"] = current_player
+        await crud_user.update_user(db, current_player, {"$inc": {"wins": 1}})
+        await crud_user.update_user(db, another_player, {"$inc": {"losses": 1}})
+
+    if game_status == "draw":
+        update_fields["status"] = "game_over"
+
+        # Increment draws for both players
+        await crud_user.update_user(db, current_player, {"$inc": {"draws": 1}})
+        await crud_user.update_user(db, another_player, {"$inc": {"draws": 1}})

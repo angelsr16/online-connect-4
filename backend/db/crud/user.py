@@ -16,3 +16,17 @@ async def create_user(db: AsyncIOMotorDatabase, user: dict) -> dict:
     user = await collection.insert_one(user)
     new_user = await collection.find_one({"_id": user.inserted_id})
     return user_helper(new_user)
+
+
+async def update_user(db: AsyncIOMotorDatabase, user_id: str, update_fields: dict):
+    collection = db["users"]
+
+    if not ObjectId.is_valid(user_id):
+        return None
+
+    result = await collection.update_one({"_id": ObjectId(user_id)}, update_fields)
+
+    if result.modified_count < 1:
+        return None
+
+    return await collection.find_one({"_id": ObjectId(user_id)})

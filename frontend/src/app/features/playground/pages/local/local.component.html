@@ -1,1 +1,41 @@
-<p>local works!</p>
+<div id="board-container" class="w-full flex flex-col items-center h-[calc(100vh_-_200px)] relative">
+    <div class="flex md:flex-row flex-col md:gap-5 gap-2 justify-center items-center md:text-xl text-sm my-5">
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex items-center gap-2">
+                <div class="size-8 rounded-full bg-red-500"></div>
+                <div [ngClass]="currentGame.player_1.id === currentGame.current_turn ? 'bg-green-700' : 'bg-gray-500'"
+                    class="px-3 py-1 rounded-full text-white font-black cursor-pointer gap-2">
+                    <span>
+                        {{ currentGame.player_1.username }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <span class="font-bold">VS</span>
+        <div class="flex items-center gap-1 flex-col">
+            <div class="flex md:flex-row flex-row-reverse items-center gap-2">
+                <div [ngClass]="currentGame.player_2.id === currentGame.current_turn ? 'bg-green-700' : 'bg-gray-500'"
+                    class="px-3 py-1 rounded-full text-white font-bold cursor-pointer">
+                    @if (currentGame.player_2) {
+                    {{ currentGame.player_2.username }}
+                    }
+                </div>
+                <div class="size-8 rounded-full bg-yellow-500"></div>
+            </div>
+        </div>
+    </div>
+
+    @if (currentGame.isGameOver) {
+    <div class="flex flex-col gap-2">
+        <span class="text-5xl font-bold">
+            {{ gameOverMessage }}
+        </span>
+        <button (click)="initGame()" pButton label="RESTART GAME" icon="pi pi-refresh" severity="info"></button>
+    </div>
+    }
+
+    <div class="w-full h-screen flex justify-center items-center gap-10 p-4 relative">
+        <app-local-game-board #gameBoard [gameData]="currentGame" player_id="1" (onGameClick)="placeDisc($event)">
+        </app-local-game-board>
+    </div>
+</div>

@@ -6,6 +6,7 @@ import { GameBoardComponent } from '../../../../shared/konva/game-board/game-boa
 import { BasicUserInfo } from '../../../../core/models/BasicUserInfo';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-game-session',
@@ -46,13 +47,23 @@ export class GameSessionComponent implements OnInit {
         this.gameId,
         (gameData: any) => {
           this.gameData = gameData;
-          this.gameBoard?.updateGrid(this.gameData);
+
+          this.gameBoard?.updateGame(this.gameData);
+
+          if (this.gameData.winner === this.userInfo.uid) {
+            confetti({
+              particleCount: 500,
+              spread: 300,
+              origin: {
+                y: 0.5,
+              },
+            });
+          }
         },
         (event: any) => {
           console.warn(`Closed: code=${event.code}, reason=${event.reason}`);
 
           if (event.code === 4004) {
-            // Handle custom reason
             this.router.navigate(['/playground/online']);
             alert('Game not found or already closed.');
           }
@@ -71,7 +82,7 @@ export class GameSessionComponent implements OnInit {
     ) {
       this.gamesService.makeMovement(this.gameData.id, xPos).subscribe({
         next: (game) => {
-          console.log(game);
+          // console.log(game);
         },
         error: (err) => {
           console.log(err.error.detail);

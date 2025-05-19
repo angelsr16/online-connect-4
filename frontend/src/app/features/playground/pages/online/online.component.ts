@@ -38,9 +38,13 @@ export class OnlineComponent {
   @ViewChild('gameBoard') gameBoard!: GameBoardComponent;
 
   gamesList: Game[] = [];
+  gamesListToShow: Game[] = [];
+
   userInfo: BasicUserInfo | null;
 
   isLoading: boolean = false;
+
+  currentFilter: number = 1;
 
   displayJoinGameModal: boolean = false;
   joinCode: string = '';
@@ -53,6 +57,9 @@ export class OnlineComponent {
   ) {
     this.gamesService.getGames().subscribe((games) => {
       this.gamesList = games as Game[];
+      this.gamesListToShow = games as Game[];
+
+      this.handleFilterGames(1);
     });
     this.userInfo = this.authService.getUserInfoFromToken();
   }
@@ -87,6 +94,24 @@ export class OnlineComponent {
           detail: err.error.detail,
         });
       },
+    });
+  }
+
+  handleFilterGames(filter: number) {
+    this.currentFilter = filter;
+    this.gamesListToShow = this.gamesList.filter((game: Game) => {
+      if (filter === 0) return true;
+
+      switch (filter) {
+        case 1:
+          return game.status === 'active';
+        case 2:
+          return game.status === 'waiting';
+        case 3:
+          return game.status === 'game_over';
+      }
+
+      return false;
     });
   }
 }

@@ -1,12 +1,9 @@
-import json
 from bson import ObjectId
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
     WebSocket,
     WebSocketDisconnect,
-    status,
 )
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -16,10 +13,7 @@ from api.dependencies.db import get_database
 from db.helpers.game import game_helper
 from db.models.game import MoveRequest
 from services import game as game_service
-from db.helpers.user import user_helper
 from bson import json_util
-
-import random
 
 router = APIRouter(prefix="/games")
 

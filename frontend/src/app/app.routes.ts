@@ -50,6 +50,11 @@ export const routes: Routes = [
             (c) => c.AiComponent
           ),
       },
+      {
+        path: '',
+        redirectTo: '/playground/local',
+        pathMatch: 'full',
+      },
     ],
   },
   { path: '**', redirectTo: '/playground', pathMatch: 'full' },

@@ -1,18 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import Konva from 'konva';
-import { Grid } from '../../../core/models/Grid';
 import { Game } from '../../../core/models/db/Game';
 import { Circle } from 'konva/lib/shapes/Circle';
+import { LocalGame } from '../../../core/models/LocalGame';
 
 @Component({
-  selector: 'app-game-board',
+  selector: 'app-local-game-board',
   imports: [],
-  templateUrl: './game-board.component.html',
-  styleUrl: './game-board.component.scss',
+  templateUrl: './local-game-board.component.html',
+  styleUrl: './local-game-board.component.scss',
 })
-export class GameBoardComponent {
-  @Input() gameData!: Game;
-  @Input() player_id!: string;
+export class LocalGameBoardComponent {
+  @Input() gameData!: LocalGame;
   @Output() onGameClick: EventEmitter<number> = new EventEmitter();
 
   private stage!: Konva.Stage;
@@ -61,8 +60,7 @@ export class GameBoardComponent {
       x: 0 * this.cellSize + this.cellSize / 2,
       y: 5 * this.cellSize + this.cellSize / 2,
       radius: this.cellSize / 2.5,
-      fill:
-        this.player_id === this.gameData.player_1.id ? '#ff6767' : '#f9ff9d',
+      fill: this.gameData.current_turn === 1 ? '#ff6767' : '#f9ff9d',
     });
 
     this.stage.on('mousemove', () => {
@@ -77,59 +75,7 @@ export class GameBoardComponent {
     });
 
     this.drawGrid();
-
     this.layer.add(this.hoverCircle);
-    this.layer.batchDraw();
-  }
-
-  updateGame(gameData: Game) {
-    this.gameData = gameData;
-    this.drawGrid();
-
-    this.positionHoverCircle();
-  }
-
-  private drawGrid() {
-    this.layer.removeChildren();
-
-    const grid = new Konva.Rect({
-      x: 0,
-      y: 0,
-      width: this.cellSize * this.cols,
-      height: this.cellSize * this.rows,
-      fill: 'blue',
-      stroke: '#000000',
-      strokeWidth: 2,
-      cornerRadius: 25,
-    });
-    this.layer.add(grid);
-
-    for (
-      let rowIndex = 0;
-      rowIndex < this.gameData.game_state.length;
-      rowIndex++
-    ) {
-      for (let colIndex = 0; colIndex < 7; colIndex++) {
-        var color = '#fff';
-        var cellValue = this.gameData.game_state[rowIndex][colIndex];
-        switch (cellValue) {
-          case 1:
-            color = 'red';
-            break;
-          case 2:
-            color = 'yellow';
-            break;
-        }
-
-        this.drawCell(rowIndex, colIndex, color);
-      }
-    }
-
-    if (this.hoverCircle) {
-      this.layer.add(this.hoverCircle);
-    }
-
-    this.layer.draw();
   }
 
   positionHoverCircle() {
@@ -147,6 +93,56 @@ export class GameBoardComponent {
     });
 
     this.layer.batchDraw();
+  }
+
+  updateGame(gameData: LocalGame) {
+    this.gameData = gameData;
+    this.drawGrid();
+
+    if (this.gameData.isGameOver) {
+      this.hoverCircle.destroy();
+    } else {
+      this.positionHoverCircle();
+    }
+  }
+
+  private drawGrid() {
+    this.layer.removeChildren();
+
+    const grid = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: this.cellSize * this.cols,
+      height: this.cellSize * this.rows,
+      fill: 'blue',
+      stroke: '#000000',
+      strokeWidth: 2,
+      cornerRadius: 25,
+    });
+    this.layer.add(grid);
+
+    this.gameData.game_state.forEach((row, rowIndex) => {
+      row.forEach((col, colIndex) => {
+        var color = '#fff';
+        switch (col) {
+          case 1:
+            color = 'red';
+            break;
+          case 2:
+            color = 'yellow';
+            break;
+        }
+
+        this.drawCell(rowIndex, colIndex, color);
+      });
+    });
+
+    this.hoverCircle.fill(
+      this.gameData.current_turn === 1 ? '#ff6767' : '#f9ff9d'
+    );
+    this.layer.add(this.hoverCircle);
+
+    this.layer.draw();
   }
 
   private drawCell(row: number, col: number, color: string) {
@@ -172,13 +168,7 @@ export class GameBoardComponent {
     return -1;
   }
 
-  onLeftClick() {
-    console.log('Left arrow clicked');
-    // You can add custom logic like navigating history or previewing moves
-  }
+  onLeftClick() {}
 
-  onRightClick() {
-    console.log('Right arrow clicked');
-    // Same as above, customize as needed
-  }
+  onRightClick() {}
 }

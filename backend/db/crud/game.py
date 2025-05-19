@@ -2,9 +2,6 @@ import uuid
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from db.helpers.game import game_helper
-from db.models.game import GameInDB
-
 
 async def create_game(db: AsyncIOMotorDatabase, game_data):
     collection = db["games"]

@@ -39,28 +39,37 @@
             <hr class="my-5 text-gray-500">
             }
 
-            @if(!isMobile){
-            <br><br>
-            }
-
-            <div class="flex flex-col gap-5 w-full">
-                @for (menuItem of menuItems; track $index) {
-                <div [routerLink]="menuItem.path" routerLinkActive="bg-gray-700"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    class="w-full flex items-center gap-5 font-bold hover:bg-gray-700 transition-all duration-450 px-3 py-2 text-2xl rounded-xl cursor-pointer">
-                    <!-- <img [src]="menuItem.icon" class="size-8"/> -->
-                    @if(isSidebarExpanded){
-                    <span class="font-bold whitespace-nowrap transition-opacity duration-300 xl:text-2xl text-lg"
-                        [ngClass]="{
-              'opacity-0 invisible': !isSidebarExpanded,
-              'opacity-100 visible': isSidebarExpanded
-            }">
-                        {{ menuItem.label }}
-                    </span>
+            <div class="flex flex-col h-full justify-between gap-10">
+                <div class="flex flex-col gap-5 w-full">
+                    @for (menuItem of menuItems; track $index) {
+                    <div [routerLink]="menuItem.path" routerLinkActive="bg-gray-700"
+                        [routerLinkActiveOptions]="{ exact: true }"
+                        class="w-full flex items-center gap-5 font-bold hover:bg-gray-700 transition-all duration-450 px-3 py-2 text-2xl rounded-xl cursor-pointer">
+                        <!-- <img [src]="menuItem.icon" class="size-8"/> -->
+                        @if(isSidebarExpanded){
+                        <span class="font-bold whitespace-nowrap transition-opacity duration-300 xl:text-2xl text-lg"
+                            [ngClass]="{
+                  'opacity-0 invisible': !isSidebarExpanded,
+                  'opacity-100 visible': isSidebarExpanded
+                }">
+                            {{ menuItem.label }}
+                        </span>
+                        }
+                    </div>
                     }
                 </div>
+
+                <hr>
+
+                @if (isSidebarExpanded) {
+                <div class="flex flex-col flex-1 border-white border-2 p-5 overfloy-scroll mx-2">
+
+                    <app-leaderboard></app-leaderboard>
+                </div>
+
                 }
             </div>
+
         </div>
 
         <div class="w-full flex flex-col">
@@ -72,17 +81,27 @@
                         class="pi cursor-pointer border border-gray-300 shadow rounded-lg p-2 text-neutral-500"
                         style="font-size: 30px"></i>
 
-                    @if (userInfo !== null && userInfo.username !== "") {
-                    <div class="flex items-center">
-                        <p-avatar [label]="userInfo.username.charAt(0).toUpperCase()" styleClass="mr-2"
-                            shape="circle" />
-                        <span class="font-semibold cursor-pointer">
-                            &#64;{{ userInfo.username }}
-                            <i class="pi pi-angle-down" (click)="op.toggle($event)"></i>
-                        </span>
-                    </div>
+                    <div class="flex items-center xl:gap-10 gap-5">
+                        <div class="flex xl:gap-5 gap-2 xl:text-xl text-sm">
+                            <span class="font-semibold text-green-500">WINS: <strong>3</strong></span>
 
-                    }
+                            <span class="font-semibold text-red-500">LOSSES: <strong>3</strong></span>
+
+                            <span class="font-semibold text-yellow-500">DRAWS: <strong>3</strong></span>
+
+                            <span>ELO: <strong>1200</strong></span>
+                        </div>
+                        @if (userInfo !== null && userInfo.username !== "") {
+                        <div class="flex items-center">
+                            <p-avatar [label]="userInfo.username.charAt(0).toUpperCase()" styleClass="mr-2"
+                                shape="circle" />
+                            <span class="font-semibold cursor-pointer">
+                                &#64;{{ userInfo.username }}
+                                <i class="pi pi-angle-down" (click)="op.toggle($event)"></i>
+                            </span>
+                        </div>
+                        }
+                    </div>
                 </div>
             </div>
 

@@ -8,6 +8,7 @@ export interface Game {
   status: string;
   moves: Move[];
   created_at: Date;
+  winner: string;
 }
 
 export interface Player {
