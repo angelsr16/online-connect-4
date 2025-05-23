@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from api.v1 import auth, games, leaderboard
+from api.v1 import auth, games, leaderboard, users
 
 from dotenv import load_dotenv
 
@@ -11,6 +11,7 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(games.router)
 app.include_router(leaderboard.router)
+app.include_router(users.router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,3 +1,14 @@
 <span class="font-bold text-lg">
     LEADERBOARD
 </span>
+
+<hr class="text-gray-50 opacity-20 my-2">
+
+@for (user of usersList; track $index) {
+<div class="w-full flex gap-6 items-center text-lg mb-2">
+    <span>{{ $index + 1 }}</span>
+    <span class="flex-1 font-bold">{{ user.username }}</span>
+    <span class="font-black">{{ user.elo_rating }}</span>
+</div>
+<hr class="text-gray-50 opacity-20">
+}

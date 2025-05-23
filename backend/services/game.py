@@ -139,14 +139,14 @@ async def make_movement(
         )
 
     current_turn = str(populated_game_data["current_turn"])
-    player_1 = populated_game_data["player_1"]["id"]
+    player_1 = populated_game_data["player_1"]
     player_2 = (
-        populated_game_data["player_2"]["id"]
+        populated_game_data["player_2"]
         if populated_game_data["player_2"] is not None
         else None
     )
 
-    if player_1 != player_id and player_2 != player_id:
+    if player_1["id"] != player_id and player_2["id"] != player_id:
         raise HTTPException(status_code=403, detail="You're not part of this game")
 
     if current_turn != player_id:
@@ -154,26 +154,26 @@ async def make_movement(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not your turn"
         )
 
-    column_movement = 0
-    row_movement = 0
+    row_position = 0
     disk_was_placed = False
-    has_winner = False
     for row in reversed(range(len(populated_game_data["game_state"]))):
         cell = populated_game_data["game_state"][row][column_index]
         if cell == 0:
             populated_game_data["game_state"][row][column_index] = (
-                1 if current_turn == player_1 else 2
+                1 if current_turn == player_1["id"] else 2
             )
-            column_movement = column_index
-            row_movement = row
+            row_position = row
             disk_was_placed = True
 
             game_status = check_game_status(
-                populated_game_data["game_state"], 1 if current_turn == player_1 else 2
+                populated_game_data["game_state"],
+                1 if current_turn == player_1["id"] else 2,
             )
 
             if game_status == None:
-                current_turn = player_2 if current_turn == player_1 else player_1
+                current_turn = (
+                    player_2["id"] if current_turn == player_1["id"] else player_1["id"]
+                )
 
             break
 
@@ -184,15 +184,18 @@ async def make_movement(
         }
 
         if game_status != None:
-            another_player = player_2 if player_1 == player_id else player_1
+            current_player = player_1 if player_1["id"] == player_id else player_2
+            another_player = player_2 if player_1["id"] == player_id else player_1
 
-            await end_game(db, game_status, update_fields, player_id, another_player)
+            await end_game(
+                db, game_status, update_fields, current_player, another_player
+            )
 
         push_fields = {
             "moves": {
                 "player": str(player_id),
-                "column": column_movement,
-                "row": row_movement,
+                "column": column_index,
+                "row": row_position,
             }
         }
 
@@ -283,13 +286,61 @@ async def end_game(
         update_fields["status"] = "game_over"
 
     if game_status == "win":
-        update_fields["winner"] = current_player
-        await crud_user.update_user(db, current_player, {"$inc": {"wins": 1}})
-        await crud_user.update_user(db, another_player, {"$inc": {"losses": 1}})
+        update_fields["winner"] = current_player["id"]
+
+        new_elo_rating_1, new_elo_rating_2 = calculate_elo(
+            current_player["elo_rating"], another_player["elo_rating"], 1
+        )
+
+        await crud_user.update_user(
+            db,
+            current_player["id"],
+            {
+                "$inc": {"wins": 1},
+                "$set": {"elo_rating": new_elo_rating_1},
+            },
+        )
+        await crud_user.update_user(
+            db,
+            another_player["id"],
+            {
+                "$inc": {"losses": 1},
+                "$set": {"elo_rating": new_elo_rating_2},
+            },
+        )
 
     if game_status == "draw":
         update_fields["status"] = "game_over"
 
-        # Increment draws for both players
-        await crud_user.update_user(db, current_player, {"$inc": {"draws": 1}})
-        await crud_user.update_user(db, another_player, {"$inc": {"draws": 1}})
+        new_elo_rating_1, new_elo_rating_2 = calculate_elo(
+            current_player["elo_rating"], another_player["elo_rating"], 0.5
+        )
+
+        await crud_user.update_user(
+            db,
+            current_player["id"],
+            {
+                "$inc": {"draws": 1},
+                "$set": {"elo_rating": new_elo_rating_1},
+            },
+        )
+        await crud_user.update_user(
+            db,
+            another_player["id"],
+            {
+                "$inc": {"draws": 1},
+                "$set": {"elo_rating": new_elo_rating_2},
+            },
+        )
+
+
+def calculate_elo(rating1, rating2, score1, k=32):
+    expected1 = 1 / (1 + 10 ** ((rating2 - rating1) / 400))
+    expected2 = 1 - expected1
+    score2 = 1 - score1
+
+    # New Ratings
+    new_rating1 = rating1 + k * (score1 - expected1)
+    new_rating2 = rating2 + k * (score2 - expected2)
+
+    return round(new_rating1, 2), round(new_rating2, 2)

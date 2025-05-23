@@ -6,7 +6,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BasicUserInfo } from '../../core/models/BasicUserInfo';
-import { LeaderboardComponent } from "./components/leaderboard/leaderboard.component";
+import { LeaderboardComponent } from './components/leaderboard/leaderboard.component';
+import { UsersService } from '../../core/services/users.service';
+import { UserInfo } from '../../core/models/UserInfo';
 
 @Component({
   selector: 'app-playground',
@@ -18,8 +20,8 @@ import { LeaderboardComponent } from "./components/leaderboard/leaderboard.compo
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    LeaderboardComponent
-],
+    LeaderboardComponent,
+  ],
   standalone: true,
   templateUrl: './playground.component.html',
   styleUrl: './playground.component.scss',
@@ -29,7 +31,7 @@ export class PlaygroundComponent {
   isMobile: boolean = false;
   sidebarToggle: boolean = false;
 
-  userInfo!: BasicUserInfo | null;
+  userInfo!: UserInfo;
 
   menuItems: any = [
     { label: 'Local', icon: 'assets/icons/local_icon.png', path: 'local' },
@@ -37,8 +39,17 @@ export class PlaygroundComponent {
     { label: 'AI', icon: 'assets/icons/ai_icon.png', path: 'ai' },
   ];
 
-  constructor(private authService: AuthService) {
-    this.userInfo = this.authService.getUserInfoFromToken();
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService
+  ) {
+    // this.userInfo = this.authService.getUserInfoFromToken();
+    this.usersService.subscribeToUserInfo(
+      (userInfo: UserInfo) => {
+        this.userInfo = userInfo;
+      },
+      () => {}
+    );
   }
 
   onSignOut() {

@@ -8,7 +8,7 @@ from db.models.pyobjectid import PyObjectId
 
 class UserBase(BaseModel):
     username: str
-    elo_rating: int = 1200
+    elo_rating: float = 1200
     games_played: int = 0
     wins: int = 0
     losses: int = 0

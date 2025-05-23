@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, WebSocket, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from api.dependencies.db import get_database
@@ -29,3 +29,27 @@ async def verify_token(
         return user_helper(user)
     except JWTError:
         raise HTTPException(status_code=403, detail="Token is invalid or expired")
+
+
+async def verify_token_from_websocket(websocket: WebSocket, db: AsyncIOMotorDatabase):
+    token = websocket.query_params.get("token")
+    if token is None:
+        await websocket.close(code=1008)
+        return
+
+    try:
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            await websocket.close(code=1008)
+            return
+
+        user = await crud_user.get_user_by_username(db, username)
+        if user is None:
+            await websocket.close(code=1008)
+            return
+
+        return user_helper(user)
+    except JWTError:
+        await websocket.close(code=1008)
+        return
