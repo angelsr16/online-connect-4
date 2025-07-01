@@ -36,7 +36,7 @@ export class PlaygroundComponent {
   menuItems: any = [
     { label: 'Local', icon: 'assets/icons/local_icon.png', path: 'local' },
     { label: 'Online', icon: 'assets/icons/online_icon.png', path: 'online' },
-    { label: 'AI', icon: 'assets/icons/ai_icon.png', path: 'ai' },
+    // { label: 'AI', icon: 'assets/icons/ai_icon.png', path: 'ai' },
   ];
 
   constructor(
