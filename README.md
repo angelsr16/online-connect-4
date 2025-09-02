@@ -88,17 +88,6 @@ cp src/environments/environment.ts.example src/environments/environment.ts
 
 ---
 
-### ✅ TODO (WIP)
-
-- [x] Responsive dashboard and sidebar
-- [x] Click detection and disk drop logic (Konva.js)
-- [ ] Backend game logic and room system
-- [ ] Matchmaking
-- [ ] AI opponent
-- [ ] Finalize ELO rating updates and leaderboard
-
----
-
 ### 📄 License
 
 This project is open-source and available under the MIT License.
@@ -194,17 +183,6 @@ No olvides crear tu archivo de entorno:
 cp src/environments/environment.ts.example src/environments/environment.ts
 ```
 
-
----
-
-### ✅ TODO (En Proceso)
-
-- [x] Dashboard responsivo y barra lateral  
-- [x] Lógica de tablero con detección de clics (Konva.js)  
-- [ ] Lógica de juego y sistema de salas en el backend  
-- [ ] Emparejamiento automático  
-- [ ] Oponente con IA  
-- [ ] Actualización del ranking ELO y leaderboard
 
 ---
 
